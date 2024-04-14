@@ -1,150 +1,51 @@
-import java.io.*;
- 
-public class Main {
-     public static String stringEncryption(String text , String key)
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.*;
+public class DigitalSignatureExample {
 
-    {    String cipherText = "";
- 
+    public static void main(String[] args) {
+        try {
+            // Generate a key pair
+            KeyPair keyPair = generateKeyPair();
+            Scanner sc=new Scanner(System.in);
+            // Get the private and public keys
+            PrivateKey privateKey = keyPair.getPrivate();
+            PublicKey publicKey = keyPair.getPublic();
+            System.out.println("enter the message");
+            
+            // Generate a digital signature
+            String message = sc.next();
+            byte[] signature = sign(message, privateKey);
+        //  System.out.println("Signature"+signature);
+            System.out.println("Digital Signature: " + Base64.getEncoder().encodeToString(signature));
 
-    
-        int cipher[] = new int[key.length()];
- 
-
-        for (int i = 0; i < key.length(); i++) {
-
-            cipher[i] = text.charAt(i) - 'A'
-
-                        + key.charAt(i)
-
-                        - 'A';
-
+            // Verify the digital signature
+            boolean isVerified = verify(message, signature, publicKey);
+            System.out.println("Signature verified: " + isVerified);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
- 
-
-     
-
-        for (int i = 0; i < key.length(); i++) {
-
-            if (cipher[i] > 25) {
-
-                cipher[i] = cipher[i] - 26;
-
-            }
-
-        }
- 
-
-      
-        for (int i = 0; i < key.length(); i++) {
-
-            int x = cipher[i] + 'A';
-
-            cipherText += (char)x;
-
-        }
- 
-
-    
-        return cipherText;
-
     }
- 
 
-    
-    public static String stringDecryption(String s,
-
-                                          String key)
-
-    {
-
-    
-
-        String plainText = "";
- 
-
-        
-
-        int plain[] = new int[key.length()];
- 
-
-        
-
-        for (int i = 0; i < key.length(); i++) {
-
-            plain[i]
-
-                = s.charAt(i) - 'A'
-
-                  - (key.charAt(i) - 'A');
-
-        }
- 
-
-
-        for (int i = 0; i < key.length(); i++) {
-
-            if (plain[i] < 0) {
-
-                plain[i] = plain[i] + 26;
-
-            }
-
-        }
- 
-
-
-        for (int i = 0; i < key.length(); i++) {
-
-            int x = plain[i] + 'A';
-
-            plainText += (char)x;
-
-        }
- 
-
-    
-
-        return plainText;
-
+    public static KeyPair generateKeyPair() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048); // Key size
+        return keyPairGenerator.generateKeyPair();
     }
- 
 
-   
-    public static void main(String[] args)
+    public static byte[] sign(String message, PrivateKey privateKey) throws Exception {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(message.getBytes());
+        return signature.sign();
+    }
 
-    {
-
-    
-
-        String plainText = "Hello";
- 
-
-
-        String key = "MONEY";
- 
-
-
-        String encryptedText = stringEncryption(
-
-            plainText.toUpperCase(), key.toUpperCase());
- 
-
-
-
-        System.out.println("Cipher Text - "
-
-                           + encryptedText);
- 
-
-        
-
-        System.out.println(
-
-            "Message - "
-
-            + stringDecryption(encryptedText,
-
-                               key.toUpperCase()));
-
+    public static boolean verify(String message, byte[] signature, PublicKey publicKey) throws Exception {
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initVerify(publicKey);
+        sig.update(message.getBytes());
+        return sig.verify(signature);
     }
 }
